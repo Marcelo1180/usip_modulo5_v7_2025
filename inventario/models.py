@@ -27,6 +27,12 @@ class Producto(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.nombre
+
 class Demo(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nombres = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.nombres
