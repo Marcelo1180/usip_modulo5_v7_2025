@@ -1,8 +1,12 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
+from rest_framework import generics, viewsets
+from rest_framework.decorators import api_view
 
 from .forms import ProductoForm
 from .models import Categoria, Producto
+from .serializers import (CategoriaSerializer, ContactSerializer,
+                          ProductoSerializer, ReporteProductosSerializer)
 
 
 def index(request):
@@ -50,3 +54,64 @@ def productoFormView(request):
     return render(request, 'form_productos.html', {
         "form": form
     })
+
+class CategoriaViewSet(viewsets.ModelViewSet):
+    queryset = Categoria.objects.all()
+    serializer_class = CategoriaSerializer
+
+
+class CategoriaCreateView(generics.CreateAPIView, generics.ListAPIView):
+    queryset = Categoria.objects.all()
+    serializer_class = CategoriaSerializer
+
+@api_view(['GET'])
+def categoria_count(request):
+    try:
+        cantidad = Categoria.objects.count()
+        return JsonResponse({
+                'cantidad': cantidad
+            },
+            safe=False,
+            status=200,
+        )
+    except Exception as e:
+        return JsonResponse({'message': str(e)}, status=400)
+
+
+@api_view(['GET'])
+def productos_en_unidades(request):
+    try:
+        productos = Producto.objects.filter(unidades='u')
+        return JsonResponse(
+            ProductoSerializer(productos, many=True).data,
+            safe=False,
+            status=200,
+        )
+    except Exception as e:
+        return JsonResponse({'message': str(e)}, status=400)
+
+@api_view(['GET'])
+def reporte_productos(request):
+    try:
+        productos = Producto.objects.filter(unidades='u')
+        cantidad = productos.count()
+        return JsonResponse(
+            ReporteProductosSerializer({
+                "cantidad": cantidad,
+                "productos": productos,
+            }).data,
+            safe=False,
+            status=200,
+        )
+    except Exception as e:
+        return JsonResponse({'message': str(e)}, status=400)
+
+
+@api_view(['POST'])
+def enviar_mensaje(request):
+    cs = ContactSerializer(data=request.data)
+    if cs.is_valid():
+        return JsonResponse({'message': 'Mensaje enviado correctamente'},
+                            status=200)
+    else:
+        return JsonResponse({'message': cs.errors}, status=200)

@@ -6,3 +6,7 @@ def validar_par(value):
         # raise ValidationError("El par debe ser par")
         raise ValidationError('%(value)s no es un numero par', params={"value":
                                                                        value})
+def validar_nombre(value):
+    if value == "Comida":
+        raise ValidationError('%(value)s no es un texto permitido',
+                              params={"value": value})
